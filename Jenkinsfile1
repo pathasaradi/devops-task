@@ -2,9 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "devops-task"          // Docker image name
-        AWS_ACCOUNT_ID = "${env.AWS_ACCOUNT_ID}"   // Global Env Variable
-        AWS_REGION = "${env.AWS_REGION}"          // Global Env Variable
+        IMAGE_NAME = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/devops-task"
     }
 
     stages {
@@ -16,16 +14,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo "Installing dependencies..."
                 sh 'npm install'
             }
         }
 
         stage('Dockerize') {
             steps {
-                echo "Building Docker image..."
                 sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
-                sh "docker tag ${IMAGE_NAME}:${BUILD_NUMBER} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${BUILD_NUMBER}"
             }
         }
 
@@ -35,23 +30,23 @@ pipeline {
                     $class: 'AmazonWebServicesCredentialsBinding',
                     credentialsId: 'aws-ecr-creds'
                 ]]) {
-                    sh """
-                        aws ecr get-login-password --region ${AWS_REGION} | \
-                        docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com
-                    """
+                    sh '''
+                        aws ecr get-login-password --region $AWS_REGION | \
+                        docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+                    '''
                 }
             }
         }
 
         stage('Push to ECR') {
             steps {
-                sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${BUILD_NUMBER}"
+                sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
             }
         }
 
         stage('Deploy') {
             steps {
-                echo "Deployment step placeholder. Add ECS deploy commands if needed."
+                echo "✅ Deployment stage can be added here (e.g., ECS)"
             }
         }
     }
@@ -64,5 +59,4 @@ pipeline {
             echo "❌ Pipeline failed!"
         }
     }
-}
 }
