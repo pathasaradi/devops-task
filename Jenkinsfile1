@@ -2,61 +2,52 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/devops-partha-task"
+        AWS_REGION = "us-east-1"
+        ECR_REPO = "338034595180.dkr.ecr.us-east-1.amazonaws.com/devops-partha-task"
+        IMAGE_TAG = "latest"
+        CLUSTER = "devops-partha-cluster"
+        SERVICE = "devops-partha-service"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
-                checkout scm
+                git branch: 'dev', url: 'https://github.com/pathasaradi/devops-task.git'
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                sh 'npm install'
-            }
-        }
-
-        stage('Dockerize') {
-            steps {
-                sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                sh '''
+                echo "Building Docker image..."
+                docker build -t $ECR_REPO:$IMAGE_TAG .
+                '''
             }
         }
 
         stage('Login to ECR') {
             steps {
-                withCredentials([[
-                    $class: 'AmazonWebServicesCredentialsBinding',
-                    credentialsId: 'aws-ecr-creds'
-                ]]) {
-                    sh '''
-                        aws ecr get-login-password --region $AWS_REGION | \
-                        docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
-                    '''
-                }
+                sh '''
+                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+                '''
             }
         }
 
-        stage('Push to ECR') {
+        stage('Push Image to ECR') {
             steps {
-                sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
+                sh '''
+                docker push $ECR_REPO:$IMAGE_TAG
+                '''
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to ECS') {
             steps {
-                echo "✅ Deployment stage can be added here (e.g., ECS)"
+                sh '''
+                echo "Forcing ECS service to deploy latest image..."
+                aws ecs update-service --cluster $CLUSTER --service $SERVICE --force-new-deployment --region $AWS_REGION
+                '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Pipeline completed successfully!"
-        }
-        failure {
-            echo "❌ Pipeline failed!"
         }
     }
 }
