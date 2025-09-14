@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials')
-        IMAGE_NAME = "pardhu6303/devops-task"
+        IMAGE_NAME = "pardhu63/devops-task"
     }
 
     stages {
