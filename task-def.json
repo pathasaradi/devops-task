@@ -1,0 +1,30 @@
+{
+  "family": "devops-task-01",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "3072",
+  "executionRoleArn": "arn:aws:iam::<Yourawsaccount>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<AWSAccount>:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "devops-container",
+      "image": "awsaccountid.dkr.ecr.us-east-1.amazonaws.com/devops-task@sha256:9062be4d73a23b98b82d012fcb709b12cbee994938884e45f5537c22a29ab3c3",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 3000,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/devops-task-definition",
+          "awslogs-region": "us-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
