@@ -196,7 +196,7 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_logs" {
 # --------------------
 # ECS Cluster
 # --------------------
-resource "aws_ecs_cluster" "cluster" {
+resource "aws_ecs_cluster" "Partha-cluster" {
   name = "${var.project_name}-cluster"
   tags = { Name = "${var.project_name}-cluster" }
 }
@@ -204,12 +204,12 @@ resource "aws_ecs_cluster" "cluster" {
 # --------------------
 # ECS Task Definition (Fargate)
 # --------------------
-resource "aws_ecs_task_definition" "task" {
+resource "aws_ecs_task_definition" "partha-task" {
   family                   = "${var.project_name}-task"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  cpu                      = "256"
-  memory                   = "512"
+  cpu                      = "1024"
+  memory                   = "3072"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
 
   container_definitions = jsonencode([
@@ -239,7 +239,7 @@ resource "aws_ecs_task_definition" "task" {
 # --------------------
 # ECS Service (Fargate)
 # --------------------
-resource "aws_ecs_service" "service" {
+resource "aws_ecs_service" "partha-service" {
   name            = "${var.project_name}-service"
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.task.arn
