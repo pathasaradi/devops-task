@@ -12,14 +12,14 @@ pre_build:
       - echo Build started
       - docker build -t bupa-stg-v2-php .
 
-  post_build:
-    commands:
-      - echo Tagging image
-      - docker tag bupa-stg-v2-php:latest 338034595180.dkr.ecr.us-west-2.amazonaws.com/bupa-stg-v2-php-ecr:latest
-      - echo Pushing image to ECR
-      - docker push 338034595180.dkr.ecr.us-west-2.amazonaws.com/bupa-stg-v2-php-ecr:latest
-      - echo Creating imagedefinitions.json
-      - printf '[{"name":"Bupa-stg-v2-php","imageUri":"338034595180.dkr.ecr.us-west-2.amazonaws.com/bupa-stg-v2-php-ecr:latest"}]' > imagedefinitions.json
+post_build:
+  commands:
+    - echo Tagging image
+    - docker tag bupa-stg-v2-php:latest 338034595180.dkr.ecr.us-west-2.amazonaws.com/bupa-stg-v2-php-ecr:latest
+    - echo Pushing image to ECR
+    - docker push 338034595180.dkr.ecr.us-west-2.amazonaws.com/bupa-stg-v2-php-ecr:latest
+    - echo Creating imagedefinitions.json
+    - printf '[{"name":"Bupa-stg-v2-php","imageUri":"338034595180.dkr.ecr.us-west-2.amazonaws.com/bupa-stg-v2-php-ecr:latest"}]' > imagedefinitions.json
 
 artifacts:
   files:
